@@ -1,0 +1,6 @@
+# Messages displayed to players when someone joins or leaves.
+# Use %player% for the player's name.
+# format can be legacy (with & colour codes) or minimessage.
+format: legacy
+join-message: "&a[+] %player%"
+leave-message: "&c[-] %player%"

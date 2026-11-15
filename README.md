@@ -34,6 +34,9 @@ GarnetMC imports the previous config files when available. Use a full server sto
 this plugin; avoid `/reload` and plugin-manager reloads,
 which can close the plugin JAR while Discord's background threads are still running.
 
+GarnetMC also creates `join-leave.yml` and `broadcast.yml` in its data folder on startup. These files configure
+Minecraft join/leave announcements and Discord-to-Minecraft broadcasts, respectively.
+
 ## Message formats
 
 Join, leave, death, advancement, kick, server-start, and server-stop notifications are always embeds. Minecraft chat
@@ -41,14 +44,16 @@ is always a regular message. Console logs are always regular messages in a `diff
 option.
 
 Set `embed-settings.<type>.enabled: false` to disable any one event embed. Set `message-settings.chat.enabled: false`
-to disable chat relaying in both directions, or `message-settings.console.enabled: false` to disable console forwarding.
-These switches default to `true`. Set `message-settings.chat.use-player-skins: true` to send Minecraft chat through a
-Discord webhook using each player's name and skin avatar; the bot needs **Manage Webhooks** in the chat channel.
-This option defaults to `false`.
+in `config.yml` to disable Minecraft-to-Discord chat, or `enabled: false` in `broadcast.yml` to disable
+Discord-to-Minecraft broadcasts. Set `message-settings.console.enabled: false` to disable console forwarding. These
+switches default to `true`. Set `message-settings.chat.use-player-skins: true` to send Minecraft chat through a Discord
+webhook using each player's name and skin avatar; the bot needs **Manage Webhooks** in the chat channel. This option
+defaults to `false`.
 
 ## Minecraft join and leave messages
 
-The join and leave announcements shown to Minecraft players are configured separately from their Discord embeds:
+The join and leave announcements shown to Minecraft players are configured in `plugins/GarnetMC/join-leave.yml`,
+separately from their Discord embeds:
 
 ```yaml
 format: legacy
@@ -61,6 +66,20 @@ name. If PlaceholderAPI is installed, its placeholders are also expanded. The co
 `/garnetmc reload`, `/garnetmc set join-message <message>`, and `/garnetmc set leave-message <message>` manage
 these settings. The old `/EnderJoinQuitMessages`, `/ejqm`, and `/jqm` command labels remain available as aliases.
 Recipe-unlock advancements are excluded from advancement notifications.
+
+## Discord broadcasts
+
+Discord messages from the configured chat channel are sent to online Minecraft players. Configure the broadcast
+template in `plugins/GarnetMC/broadcast.yml`:
+
+```yaml
+enabled: true
+format: legacy
+message: "&7[&9Discord&7] &f{user}&7: &f{message}"
+```
+
+Set `enabled` to `false` to disable this direction of chat relay. `format` accepts `legacy` (`&` colour codes) or
+`minimessage`; the message template supports `{user}` and `{message}`.
 
 ## Console logging
 

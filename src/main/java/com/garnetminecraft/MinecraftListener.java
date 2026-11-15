@@ -25,7 +25,7 @@ public class MinecraftListener implements Listener {
     public MinecraftListener(GarnetMinecraft plugin, DiscordBridge discord) {
         this.plugin = plugin;
         this.discord = discord;
-        this.messageParser = new MessageParser(plugin);
+        this.messageParser = new MessageParser();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -100,7 +100,7 @@ public class MinecraftListener implements Listener {
             String setting,
             String playerName,
             Player player) {
-        String message = plugin.getConfig().getString(setting);
+        String message = plugin.getJoinLeaveConfig().getString(setting);
         if (message == null) {
             return null;
         }
@@ -109,6 +109,8 @@ public class MinecraftListener implements Listener {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             message = PlaceholderAPI.setPlaceholders(player, message);
         }
-        return messageParser.parseMessage(message);
+        return messageParser.parseMessage(
+                message,
+                plugin.getJoinLeaveConfig().getString("format", "legacy"));
     }
 }

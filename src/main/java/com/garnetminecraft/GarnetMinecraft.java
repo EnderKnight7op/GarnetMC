@@ -2,6 +2,8 @@ package com.garnetminecraft;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,27 +15,28 @@ import java.util.logging.Level;
 public class GarnetMinecraft extends JavaPlugin {
     private DiscordBridge discord;
     private ConsoleRelay consoleRelay;
+    private FileConfiguration joinLeaveConfig;
+    private FileConfiguration broadcastConfig;
     private boolean startedSuccessfully;
 
     @Override
     public void onEnable() {
-        final boolean hadGarnetMCConfig = new File(getDataFolder(), "config.yml").exists();
         try {
             migrateLegacyPluginConfig();
-        } catch (IOException exception) {
-            getLogger().log(Level.SEVERE, "Could not migrate the existing GarnetMinecraft config.", exception);
+            saveDefaultConfig();
+            loadFeatureConfigs();
+            migrateBridgeSettings();
+            migrateEmbedSettings();
+            migrateEventMessages();
+            migrateAdvancementDescription();
+            removeObsoleteFormatSettings();
+            getConfig().options().copyDefaults(true);
+            saveConfig();
+        } catch (IOException | InvalidConfigurationException exception) {
+            getLogger().log(Level.SEVERE, "Could not load or migrate GarnetMC configuration.", exception);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        saveDefaultConfig();
-        migrateJoinLeaveConfig(!hadGarnetMCConfig);
-        migrateBridgeSettings();
-        migrateEmbedSettings();
-        migrateEventMessages();
-        migrateAdvancementDescription();
-        removeObsoleteFormatSettings();
-        getConfig().options().copyDefaults(true);
-        saveConfig();
 
         try {
             final PluginCommand command = getCommand("garnetmc");
@@ -63,6 +66,91 @@ public class GarnetMinecraft extends JavaPlugin {
         }
     }
 
+    private void loadFeatureConfigs() throws IOException, InvalidConfigurationException {
+        final File joinLeaveFile = new File(getDataFolder(), "join-leave.yml");
+        final boolean createJoinLeaveConfig = !joinLeaveFile.exists();
+        if (createJoinLeaveConfig) {
+            saveResource("join-leave.yml", false);
+        }
+        joinLeaveConfig = loadYamlConfiguration(joinLeaveFile);
+        if (createJoinLeaveConfig) {
+            migrateJoinLeaveConfig();
+        }
+
+        final File broadcastFile = new File(getDataFolder(), "broadcast.yml");
+        final boolean createBroadcastConfig = !broadcastFile.exists();
+        if (createBroadcastConfig) {
+            saveResource("broadcast.yml", false);
+        }
+        broadcastConfig = loadYamlConfiguration(broadcastFile);
+        if (createBroadcastConfig
+                && getConfig().contains("message-settings.chat.enabled", true)
+                && !getConfig().getBoolean("message-settings.chat.enabled", true)) {
+            broadcastConfig.set("enabled", false);
+            broadcastConfig.save(broadcastFile);
+        }
+
+        removeLegacyJoinLeaveSettings();
+    }
+
+    private FileConfiguration loadYamlConfiguration(File file) throws IOException, InvalidConfigurationException {
+        final YamlConfiguration configuration = new YamlConfiguration();
+        configuration.load(file);
+        return configuration;
+    }
+
+    private void migrateJoinLeaveConfig() throws IOException, InvalidConfigurationException {
+        final File legacyFile = new File(
+                new File(getDataFolder().getParentFile(), "EnderJoinLeaveMessages"),
+                "config.yml");
+        if (legacyFile.isFile()) {
+            copyJoinLeaveSettings(loadYamlConfiguration(legacyFile));
+        } else {
+            copyJoinLeaveSettings(getConfig());
+        }
+
+        joinLeaveConfig.save(new File(getDataFolder(), "join-leave.yml"));
+        getLogger().info("Created join-leave.yml with available existing message settings.");
+    }
+
+    private void copyJoinLeaveSettings(FileConfiguration source) {
+        for (String setting : new String[] {"format", "join-message", "leave-message"}) {
+            if (source.contains(setting, true)) {
+                joinLeaveConfig.set(setting, source.get(setting));
+            }
+        }
+    }
+
+    private void removeLegacyJoinLeaveSettings() throws IOException {
+        boolean removed = false;
+        for (String setting : new String[] {"format", "join-message", "leave-message"}) {
+            if (getConfig().contains(setting, true)) {
+                getConfig().set(setting, null);
+                removed = true;
+            }
+        }
+        if (removed) {
+            saveConfig();
+        }
+    }
+
+    public FileConfiguration getJoinLeaveConfig() {
+        return joinLeaveConfig;
+    }
+
+    public FileConfiguration getBroadcastConfig() {
+        return broadcastConfig;
+    }
+
+    public void saveJoinLeaveConfig() throws IOException {
+        joinLeaveConfig.save(new File(getDataFolder(), "join-leave.yml"));
+    }
+
+    public void reloadPluginConfigs() throws IOException, InvalidConfigurationException {
+        reloadConfig();
+        loadFeatureConfigs();
+    }
+
     private void migrateLegacyPluginConfig() throws IOException {
         final File currentConfig = new File(getDataFolder(), "config.yml");
         if (currentConfig.exists()) {
@@ -81,32 +169,6 @@ public class GarnetMinecraft extends JavaPlugin {
         }
         Files.copy(legacyConfig.toPath(), currentConfig.toPath());
         getLogger().info("Copied the existing GarnetMinecraft config to the GarnetMC data folder.");
-    }
-
-    private void migrateJoinLeaveConfig(boolean importingExistingConfig) {
-        if (!importingExistingConfig) {
-            return;
-        }
-
-        final File legacyConfig = new File(
-                new File(getDataFolder().getParentFile(), "EnderJoinLeaveMessages"),
-                "config.yml");
-        if (!legacyConfig.isFile()) {
-            return;
-        }
-
-        final YamlConfiguration oldConfig = YamlConfiguration.loadConfiguration(legacyConfig);
-        boolean migrated = false;
-        for (String setting : new String[] {"format", "join-message", "leave-message"}) {
-            if (oldConfig.contains(setting, true)) {
-                getConfig().set(setting, oldConfig.get(setting));
-                migrated = true;
-            }
-        }
-        if (migrated) {
-            saveConfig();
-            getLogger().info("Imported join and leave message settings from EnderJoinLeaveMessages.");
-        }
     }
 
     private void migrateBridgeSettings() {

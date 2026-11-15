@@ -3,8 +3,11 @@ package com.garnetminecraft;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.logging.Level;
 
 public class GarnetCommands implements CommandExecutor {
     private final GarnetMinecraft plugin;
@@ -32,8 +35,13 @@ public class GarnetCommands implements CommandExecutor {
                 sender.sendMessage("You don't have permission to do that.");
                 return true;
             }
-            plugin.reloadConfig();
-            sender.sendMessage("GarnetMC configuration reloaded!");
+            try {
+                plugin.reloadPluginConfigs();
+                sender.sendMessage("GarnetMC configuration reloaded!");
+            } catch (IOException | InvalidConfigurationException exception) {
+                plugin.getLogger().log(Level.SEVERE, "Could not reload GarnetMC configuration.", exception);
+                sender.sendMessage("Could not reload GarnetMC configuration. Check the server log.");
+            }
             return true;
         }
 
@@ -54,8 +62,14 @@ public class GarnetCommands implements CommandExecutor {
             }
 
             final String message = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
-            plugin.getConfig().set(setting, message);
-            plugin.saveConfig();
+            plugin.getJoinLeaveConfig().set(setting, message);
+            try {
+                plugin.saveJoinLeaveConfig();
+            } catch (IOException exception) {
+                plugin.getLogger().log(Level.SEVERE, "Could not save the join/leave configuration.", exception);
+                sender.sendMessage("Could not save the message. Check the server log.");
+                return true;
+            }
             sender.sendMessage(("join-message".equals(setting) ? "Join" : "Leave") + " message updated!");
             return true;
         }

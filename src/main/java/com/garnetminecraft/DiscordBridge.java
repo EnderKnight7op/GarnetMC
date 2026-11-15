@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
@@ -36,12 +37,14 @@ public class DiscordBridge {
             "join", "leave", "death", "advancement", "kick", "server-start", "server-stop");
 
     private final GarnetMinecraft plugin;
+    private final MessageParser messageParser;
     private JDA jda;
     private Guild guild;
     private Webhook playerChatWebhook;
 
     public DiscordBridge(GarnetMinecraft plugin) {
         this.plugin = plugin;
+        this.messageParser = new MessageParser();
     }
 
     public void start() throws InterruptedException {
@@ -397,7 +400,7 @@ public class DiscordBridge {
     }
 
     private void relayDiscordMessage(MessageReceivedEvent event) {
-        if (!plugin.getConfig().getBoolean("message-settings.chat.enabled", true)
+        if (!plugin.getBroadcastConfig().getBoolean("enabled", true)
                 || event.getAuthor().isBot()
                 || event.isWebhookMessage()
                 || event.getChannel().getIdLong() != plugin.getChannelId("chat-channel-id")) {
@@ -408,7 +411,15 @@ public class DiscordBridge {
                 ? event.getAuthor().getName()
                 : event.getMember().getEffectiveName();
         final String message = event.getMessage().getContentDisplay();
-        final String minecraftMessage = "[Discord] " + name + ": " + message;
+        final String template = plugin.getBroadcastConfig().getString(
+                "message",
+                "&7[&9Discord&7] &f{user}&7: &f{message}");
+        final String rendered = template
+                .replace("{user}", name)
+                .replace("{message}", message);
+        final String format = plugin.getBroadcastConfig().getString("format", "legacy");
+        final String minecraftMessage = LegacyComponentSerializer.legacySection()
+                .serialize(messageParser.parseMessage(rendered, format));
 
         Bukkit.getScheduler().runTask(plugin, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
