@@ -14,11 +14,12 @@ console-channel-id: "0"
 console-log-levels: [info, warn, error]
 
 # Enable or disable regular message relays.
+    
 message-settings:
   chat:
-    # Controls Minecraft chat relayed to Discord. Discord-to-Minecraft is in broadcast.yml.
-    enabled: true
+  # Controls Minecraft chat relayed to Discord. Discord-to-Minecraft is in broadcast.yml.
     use-player-skins: false
+    enabled: true
   console:
     enabled: true
 

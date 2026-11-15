@@ -1,0 +1,7 @@
+# Controls messages relayed from the configured Discord chat channel to Minecraft.
+enabled: true
+
+# Use legacy for & colour codes or minimessage for MiniMessage tags.
+# Available placeholders: {user}, {message}
+format: legacy
+message: "&7[&9Discord&7] &f{user}&7: &f{message}"
