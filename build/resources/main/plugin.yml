@@ -1,0 +1,33 @@
+name: GarnetMC
+main: com.garnetminecraft.GarnetMinecraft
+version: 1.0.0
+description: Minecraft join and leave messages with a Discord chat bridge.
+api-version: '1.21'
+softdepend:
+  - PlaceholderAPI
+
+commands:
+  garnetmc:
+    description: Configure GarnetMC join and leave messages.
+    usage: /garnetmc <help|reload|set>
+    aliases: [gmc, enderjoinquitmessages, ejqm, jqm]
+
+permissions:
+  garnetmc.command.help:
+    description: Allows use of /garnetmc help.
+    default: true
+  garnetmc.command.reload:
+    description: Allows reloading GarnetMC configuration.
+    default: op
+  garnetmc.command.set:
+    description: Allows changing GarnetMC join and leave messages.
+    default: op
+  enderjoinquitmessages.command.help:
+    description: Legacy permission for /garnetmc help.
+    default: true
+  enderjoinquitmessages.command.reload:
+    description: Legacy permission for reloading GarnetMC configuration.
+    default: op
+  enderjoinquitmessages.command.set:
+    description: Legacy permission for changing GarnetMC messages.
+    default: op

@@ -1,0 +1,154 @@
+# Create a bot in the Discord Developer Portal and paste its token here.
+bot-token: "PASTE_BOT_TOKEN_HERE"
+
+# Minecraft join and leave announcements.
+# Use %player% for the joining or leaving player's name.
+# format can be legacy (with & colour codes) or minimessage.
+format: legacy
+join-message: "&a[+] %player%"
+leave-message: "&c[-] %player%"
+
+# Turn on the Message Content Intent for your bot in the Developer Portal.
+# Use the numeric IDs from Discord's Developer Mode.
+server-id: "0"
+chat-channel-id: "0"
+
+# Set this to "0" to turn off console forwarding.
+console-channel-id: "0"
+
+# Console logs are sent in a live-updating diff code block every two seconds.
+# Supported levels: trace, debug, info, warn, error, fatal.
+console-log-levels: [info, warn, error]
+
+# Enable or disable regular message relays.
+message-settings:
+  chat:
+    enabled: true
+    use-player-skins: false
+  console:
+    enabled: true
+
+# These notifications are always embeds. Customize their content and appearance here.
+# Set enabled: false under an event to turn it off. Supported placeholders:
+# {player} (player events), {message} (death message), {advancement}.
+# Colour must be a quoted #RRGGBB hex value; blank or invalid values leave it unset.
+# Only descriptions have default text; all other embed options are empty by default.
+embed-settings:
+  join:
+    enabled: true
+    embed:
+      description: "{player} joined the server."
+      title: ""
+      title-url: ""
+      colour: ""
+      author: ""
+      author-url: ""
+      author-icon: ""
+      footer: ""
+      footer-icon: ""
+      thumbnail: ""
+      image: ""
+      timestamp: ""
+      fields: []
+
+  leave:
+    enabled: true
+    embed:
+      description: "{player} left the server."
+      title: ""
+      title-url: ""
+      colour: ""
+      author: ""
+      author-url: ""
+      author-icon: ""
+      footer: ""
+      footer-icon: ""
+      thumbnail: ""
+      image: ""
+      timestamp: ""
+      fields: []
+
+  death:
+    enabled: true
+    embed:
+      description: "{message}"
+      title: ""
+      title-url: ""
+      colour: ""
+      author: ""
+      author-url: ""
+      author-icon: ""
+      footer: ""
+      footer-icon: ""
+      thumbnail: ""
+      image: ""
+      timestamp: ""
+      fields: []
+
+  advancement:
+    enabled: true
+    embed:
+      description: "{player} has made the advancement [{advancement}]."
+      title: ""
+      title-url: ""
+      colour: ""
+      author: ""
+      author-url: ""
+      author-icon: ""
+      footer: ""
+      footer-icon: ""
+      thumbnail: ""
+      image: ""
+      timestamp: ""
+      fields: []
+
+  kick:
+    enabled: true
+    embed:
+      description: "{player} was kicked from the server."
+      title: ""
+      title-url: ""
+      colour: ""
+      author: ""
+      author-url: ""
+      author-icon: ""
+      footer: ""
+      footer-icon: ""
+      thumbnail: ""
+      image: ""
+      timestamp: ""
+      fields: []
+
+  server-start:
+    enabled: true
+    embed:
+      description: "The server is online."
+      title: ""
+      title-url: ""
+      colour: ""
+      author: ""
+      author-url: ""
+      author-icon: ""
+      footer: ""
+      footer-icon: ""
+      thumbnail: ""
+      image: ""
+      timestamp: ""
+      fields: []
+
+  server-stop:
+    enabled: true
+    embed:
+      description: "The server is shutting down."
+      title: ""
+      title-url: ""
+      colour: ""
+      author: ""
+      author-url: ""
+      author-icon: ""
+      footer: ""
+      footer-icon: ""
+      thumbnail: ""
+      image: ""
+      timestamp: ""
+      fields: []
